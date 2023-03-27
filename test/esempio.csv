@@ -1,0 +1,7 @@
+nome us,tipo,descrizione,epoca,anteriore,posteriore,contemporaneo,rapporti
+1,USM,muro,romana,2|3,,4,"[['copre', '2'], ['copre', '3'], ['si lega', '4']]"
+2,USM,colonna,romana,4,1,,"[['copre', '4'], ['coperto da', '1']]"
+3,USM,colonna,romana,5,1,,"[['copre', '5'], ['coperto da', '1']]"
+4,USM,capitello,romana,6,2,,"[['copre', '6'], ['coperto da', '2']]"
+5,USM,capitello,romana,6,3,,"[['copre', '6'], ['coperto da', '3']]"
+6,USM,architrave,medievale,,4|5,1,"[['coperto da', '4'], ['coperto da', '5'], ['si lega', '1']]"
