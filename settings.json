@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "C:/Users/enzoc/Documents/csv-mapper2Dataspace/csv_mapper.py"
+   "value": "C:/Users/enzoc/Documents/EDmapper2pyArchInit/csv_mapper2EDMatrix.py"
   },
   {
    "optionDest": "onefile",
@@ -19,11 +19,11 @@
   },
   {
    "optionDest": "icon_file",
-   "value": "C:/Users/enzoc/Documents/csv-mapper2Dataspace/icon/H_check.ico"
+   "value": "C:/Users/enzoc/Documents/EDmapper2pyArchInit/icon/H_check.ico"
   },
   {
    "optionDest": "name",
-   "value": "CSV-mapper"
+   "value": "EDmapperTOpyarchinit"
   },
   {
    "optionDest": "ascii",
@@ -31,11 +31,11 @@
   },
   {
    "optionDest": "clean_build",
-   "value": true
+   "value": false
   },
   {
    "optionDest": "splash",
-   "value": "C:/Users/enzoc/Documents/csv-mapper2Dataspace/icon/dataspace_icon.png"
+   "value": "C:/Users/enzoc/Documents/EDmapper2pyArchInit/icon/splash.jpg"
   },
   {
    "optionDest": "strip",
@@ -79,23 +79,11 @@
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/enzoc/Documents/csv-mapper2Dataspace/data;data/"
+   "value": "C:/Users/enzoc/Documents/EDmapper2pyArchInit/templates;templates/"
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/enzoc/Documents/csv-mapper2Dataspace/icon;icon/"
-  },
-  {
-   "optionDest": "datas",
-   "value": "C:/Users/enzoc/Documents/csv-mapper2Dataspace/resources;resources/"
-  },
-  {
-   "optionDest": "datas",
-   "value": "C:/Users/enzoc/Documents/csv-mapper2Dataspace/templates;templates/"
-  },
-  {
-   "optionDest": "datas",
-   "value": "C:/Users/enzoc/Documents/csv-mapper2Dataspace/ui;ui/"
+   "value": "C:/Users/enzoc/Documents/EDmapper2pyArchInit/ui;ui/"
   }
  ],
  "nonPyinstallerOptions": {

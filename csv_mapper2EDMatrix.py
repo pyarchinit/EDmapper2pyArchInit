@@ -7,21 +7,35 @@ button to generate a new, uniform CSV file.
 Additionally, this application also provides a way to generate
 unique UUID values for each data row and also provide mapping to concepts from a JSON file.
 """
-
+from time import sleep
 try:
     import pyi_splash
 except:
     pass
 else:
-	pyi_splash.update_text("Welcome")
+	sleep(5)
 	pyi_splash.close()
 
-from PyQt5.QtCore import QAbstractTableModel,Qt
-from PyQt5.QtWidgets import *#QTableWidgetItem,QTextEdit,QWidget,QTableWidget,QTableView,QMainWindow,QApplication,QComboBox
+from PyQt5.QtCore import (QAbstractTableModel,
+						  Qt)
+from PyQt5.QtWidgets import (QDialog,
+							 QFileDialog,
+							 QInputDialog,
+							 QTableWidgetItem,
+							 QTableWidget,
+							 QMainWindow,
+							 QApplication,
+							 QComboBox,
+							 QMessageBox,
+							 QLineEdit,
+							 QPushButton,
+							 QHBoxLayout,
+							 QVBoxLayout,
+							 QLabel)
 from PyQt5.uic import loadUiType
+from PyQt5 import QtCore
 import os
 import csv
-global csv_file_path
 import pandas as pd
 
 
@@ -52,8 +66,35 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 		self.convert_data.setEnabled(False)
 		self.add_mapping.setEnabled(False)
 		self.remove_mapping.setEnabled(False)
+		self.index_tab.setEnabled(False)
+		self.update_result.setEnabled(False)
+		self.find_replace.setEnabled(False)
+		self.save_data.setEnabled(False)
 		self.out=''
 
+
+
+	def on_find_replace_pressed(self):
+		self.replace_cell_values()
+	def replace_cell_values(self):
+		# Ottiene la colonna selezionata dall'utente
+		selected_column = self.tableWidget_result.currentColumn()
+		# Ottiene il testo di ricerca dalla finestra di input
+		search_text, ok = QInputDialog.getText(self, 'Find and replace', 'insert text:')
+		if ok:
+			# Ottiene il valore di sostituzione dalla finestra di input
+			replace_text, ok = QInputDialog.getText(self, 'Find and replace',
+													'Insert a value:')
+			if ok:
+				# Scorre le righe della colonna selezionata e cerca corrispondenze per la stringa di ricerca
+				for row in range(self.tableWidget_result.rowCount()):
+					item = self.tableWidget_result.item(row, selected_column)
+					if item is not None and search_text in item.text():
+						# Sostituisce il valore della cella con il valore di sostituzione
+						self.tableWidget_result.setItem(row, selected_column, QTableWidgetItem(replace_text))
+					#else:
+						#self.show_info('No data found')
+					#break
 	def on_template_changed(self,text):
 
 		if text:
@@ -114,7 +155,10 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 		if not data_file:
 			self.show_error('No data file selected.')
 			return
-		self.transform_data(data_file,data_file)
+		try:
+			self.transform_data(data_file,data_file)
+		except:
+			pass
 		df = pd.read_csv(data_file, dtype = str)
 		self.data_fields = df.columns.tolist()
 
@@ -142,6 +186,21 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 			self.convert_data.setEnabled(True)
 			self.remove_mapping.setEnabled(True)
 
+	def on_auto_mapping_pressed(self):
+		#funziona solo per il template Extended matrix
+		#indce della lista del template
+		template_index = [3,5,29,76,18]
+		#lista dei campi del template ED
+		data_field = ["nome us","descrizione","tipo","epoca","rapporti"]
+		#iterazione e unione delle due liste
+		for i, e in zip(data_field,template_index):
+			self.mapping[self.template_fields[e]] = i
+			item = QTableWidgetItem(i)
+			self.mapping_table.setItem(e, 1, item)
+
+		self.convert_data.setEnabled(True)
+		self.remove_mapping.setEnabled(True)
+
 	def on_remove_mapping_pressed(self):
 		#It  used to remove a mapping
 		template_index = self.template_table.currentRow()
@@ -158,9 +217,9 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 			new_header = header + ['rapporti']
 			rows = []
 			for row in reader:
-				col1_values = row[col1_idx].split('|')
-				col2_values = row[col2_idx].split('|')
-				col3_values = row[col3_idx].split('|')
+				col1_values = row[col1_idx].split(',')
+				col2_values = row[col2_idx].split(',')
+				col3_values = row[col3_idx].split(',')
 				new_col = []
 				for val in col1_values:
 
@@ -177,11 +236,13 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 						new_col.append(['si lega', val])
 				row.append(new_col)
 				rows.append(row)
-		# with open(output, 'w', newline = '') as f:
-		# 	writer = csv.writer(f)
-		# 	writer.writerow(new_header)
-		# 	for row in rows:
-		# 		writer.writerow(row)
+
+		with open(output, 'w', newline = '') as f:
+		 	writer = csv.writer(f)
+		 	writer.writerow(new_header)
+		 	for row in rows:
+		 		writer.writerow(row)
+		self.data_table.removeColumn(new_header)
 	def on_update_result_pressed(self):
 		# ottieni l'indice delle righe selezionate
 		selected_rows = [index.row() for index in self.tableWidget_result.selectionModel().selectedRows()]
@@ -190,25 +251,38 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 		user_input, ok_pressed = QInputDialog.getText(None, "Enter Data", "Enter a value:")
 
 		if ok_pressed:
-
-
 			# per ciascuna riga selezionata...
 			for row in selected_rows:
 				for column in selected_columns:
-					if column==0:#aggiungere indice in sequenza
-						a=self.add_numbers_in_sequence(int(user_input),row)###da modificare
-						self.tableWidget_result.item(row, column).setText(str(a))###da modificare
+					if column==0:
+						self.show_info('Use Add index for this column')
+						break
 					else:
 						self.tableWidget_result.item(row, column).setText(user_input)
-	def add_numbers_in_sequence(self,start_number, a_list):
-		new_list = []
-		current_number = start_number
-		# loop through the list, adding to the sequence
-		for i in range(a_list):
-			new_list.append(current_number)
-			current_number += 1
-			print(new_list)
-		return new_list
+			#if column == 0:  # aggiungere indice in sequenza alla prima colonna
+
+	def on_index_tab_pressed(self):
+		self.add_sequence_to_selected_rows()
+
+	def add_sequence_to_selected_rows(self):
+		"""
+		Aggiunge numeri in sequenza alle righe selezionate di una QTableWidget a partire da un input.
+		"""
+		dialog = self.AddSequenceDialog(self.tableWidget_result)
+		input_num = dialog.exec_()
+		if input_num is None:
+			return
+		selected_rows = [index.row() for index in self.tableWidget_result.selectedIndexes() if index.column() == 0]
+		if not selected_rows:
+			return
+		last_index = max(selected_rows)
+		for i in range(last_index + 1, self.tableWidget_result.rowCount()):
+			if i not in selected_rows:
+				break
+			input_num += 1
+		for row in selected_rows:
+			self.tableWidget_result.setItem(row, 0, QTableWidgetItem(str(input_num)))
+			input_num += 1
 	def on_convert_data_pressed(self):
 
 		if self.comboBox_template.currentText()=='':
@@ -240,19 +314,18 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 			# open the CSV file and read the data
 			with open(output_file) as csvfile:
 				readCSV = csv.reader(csvfile,delimiter=',')
-				#next(readCSV)
+				header=next(readCSV)
 				row_count = 0
-				rows=[]
 
-				# loop through each row of the CSV file
+				# loop su ogni riga del csv
 				for row in readCSV:
-					# get the number of columns in the row
+					# lunghezza del numero di colonne
 					column_count = len(row)
 					print(column_count)
 					# add a new row to the QTableWidget object
 					self.tableWidget_result.setRowCount(row_count + 1)
 					self.tableWidget_result.setColumnCount(column_count)
-
+					self.tableWidget_result.setHorizontalHeaderLabels(header)
 					# loop through each column in the row
 					for column in range(column_count):
 						# create a new item and add it to the QTableWidget
@@ -263,13 +336,21 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 					# increment the row count
 					row_count += 1
 					self.tableWidget_result.show()
-			#self.tableWidget_result.show()
-			#self.log_data.setText(data.to_string(index = False))
+			#Si abilitano le funzioni per la tableWidget_result
 			self.out=output_file
+			self.index_tab.setEnabled(True)
+			self.update_result.setEnabled(True)
+			self.find_replace.setEnabled(True)
+			self.save_data.setEnabled(True)
+
 	def on_save_data_pressed(self):
 		with open(self.out, mode = 'w', newline = '') as csvfile:
 			writer = csv.writer(csvfile, delimiter = ',')
-			# loop through each row of the QTableWidget object
+			# Scrive l'intestazione della tabella
+			headers = []
+			for column in range(self.tableWidget_result.columnCount()):
+				headers.append(self.tableWidget_result.horizontalHeaderItem(column).text())
+			writer.writerow(headers)
 			for row in range(self.tableWidget_result.rowCount()):
 				row_data = []
 				# loop through each column in the row
@@ -280,6 +361,7 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 					row_data.append(cell_data)
 				# write the row data to the CSV file
 				writer.writerow(row_data)
+			self.show_info('Saved successfully')
 
 	def show_error(self, message):
 		dialog = QMessageBox(self)
@@ -289,6 +371,39 @@ class CSVMapper(QMainWindow,MAIN_DIALOG_CLASS):
 		dialog.setStandardButtons(QMessageBox.Ok)
 		dialog.show()
 
+	def show_info(self, message):
+		dialog = QMessageBox(self)
+		dialog.setIcon(QMessageBox.Information)
+		dialog.setText(message)
+		dialog.setWindowTitle('Info')
+		dialog.setStandardButtons(QMessageBox.Ok)
+		dialog.show()
+	class AddSequenceDialog(QDialog):
+		def __init__(self, table_widget: QTableWidget):
+			super().__init__()
+			self.table_widget = table_widget
+			self.input_num = None
+			self.input_edit = QLineEdit()
+			ok_button = QPushButton('Ok')
+			ok_button.clicked.connect(self.accept)
+			cancel_button = QPushButton('Cancel')
+			cancel_button.clicked.connect(self.reject)
+			button_layout = QHBoxLayout()
+			button_layout.addWidget(ok_button)
+			button_layout.addWidget(cancel_button)
+			layout = QVBoxLayout()
+			layout.addWidget(QLabel('Enter starting number: '))
+			layout.addWidget(self.input_edit)
+			layout.addLayout(button_layout)
+			self.setLayout(layout)
+
+		def exec_(self):
+			super().exec_()
+			try:
+				self.input_num = int(self.input_edit.text())
+			except ValueError:
+				self.input_num = None
+			return self.input_num
 class PandasModel(QAbstractTableModel):
 	def __init__(self, data):
 		QAbstractTableModel.__init__(self)
